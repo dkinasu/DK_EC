@@ -104,6 +104,7 @@ void Write_Process(struct traceline *T_line)
 					if(Is_cache_full())
 					{
 						printf("Cache is full! Need evict\n");
+						Page_lru_evict(1);
 						/*need evict a page*/
 					}
 					Page_lru_add(page_node);
@@ -132,6 +133,7 @@ void Write_Process(struct traceline *T_line)
 				if(Is_cache_full())
 				{
 					printf("Cache is full! Need evict\n");
+					Page_lru_evict(1);
 					/*need evict a page*/
 				}
 
@@ -163,6 +165,7 @@ void Write_Process(struct traceline *T_line)
 					if(Is_cache_full())
 					{
 						printf("Cache is full! Need evict\n");
+						Page_lru_evict(1);
 						/*need evict a page*/
 					}
 
@@ -189,6 +192,7 @@ void Write_Process(struct traceline *T_line)
 				if(Is_cache_full())
 				{
 					printf("Cache is full! Need evict\n");
+					Page_lru_evict(1);
 					/*need evict a page*/
 				}
 
@@ -223,6 +227,7 @@ void Write_Process(struct traceline *T_line)
 				{
 					printf("Cache is full! Need evict\n");
 					/*need evict a page*/
+					Page_lru_evict(1);
 				}
 				Page_lru_add(page_node);
 			}
@@ -247,6 +252,7 @@ void Write_Process(struct traceline *T_line)
 			{
 					printf("Cache is full! Need evict\n");
 					/*need evict a page*/
+					Page_lru_evict(1);
 			}
 			//printf("Finishing adding page!\n");
 			Page_lru_add(page_node);
@@ -307,6 +313,7 @@ void Read_Process(struct traceline *T_line)
 				if(Is_cache_full())
 				{
 					printf("Cache is full! Need evict\n");
+					Page_lru_evict(1);
 					/*need evict a page*/
 				}
 

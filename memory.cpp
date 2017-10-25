@@ -308,6 +308,7 @@ void Page_lru_add(struct page_node *p)
 	list_add(&p->lru_list, &lru_page_list);
 	Mark_pblk_in_mem(p->pblk_nr);
 	page_count_in_cache++;
+	//printf("Adding page_node: pos = %ld\n", p->pos);
 	//printf("Finish Adding new page into LRU\n");
 }
 
@@ -321,14 +322,18 @@ void Page_lru_del(struct page_node *p)
 
 void Page_lru_accessed_adjust(struct page_node *p)
 {
-	Page_lru_del(p);
-	Page_lru_add(p);
+	if (Pblk_is_in_mem(p->pblk_nr))
+	{
+		Page_lru_del(p);
+		Page_lru_add(p);
+	}
+	
 	//printf("Finishing Adjusting LRU\n");
 }
 
 int Is_cache_full()
 {
-	printf("page_count_in_cache: %ld cache_size: %ld\n", page_count_in_cache, cache_size);
+	//printf("page_count_in_cache: %ld cache_size: %ld\n", page_count_in_cache, cache_size);
 	return (page_count_in_cache >= cache_size);
 }
 
@@ -367,4 +372,75 @@ struct page_node * Find_page_node_lru(long int pos)
 	printf("[%d] End searching LRU\n", counter);
 
 	return NULL;
+}
+
+struct page_node * Find_LRUed_page()
+{
+	struct page_node *tmp;
+	struct list_head *p;
+
+	int counter = 0;
+
+	if(list_empty(&lru_page_list))
+	{
+		printf("Cache is empty\n");
+		return NULL;
+	}
+	else
+	{
+		list_for_each(p, &lru_page_list)
+		{
+			printf("Infinite loop\n");
+			counter++;
+			tmp = list_entry(p, struct page_node, lru_list);
+		}
+	}
+
+	printf("The LRUed page_node->pos: %ld\n", tmp->pos);
+	return tmp;
+}
+
+void Print_lru_cache()
+{
+	struct page_node *tmp;
+	struct list_head *p;
+
+	int counter = 0;
+	
+	printf("---------Printing LRU(rightmost)---------\n");
+
+	if(list_empty(&lru_page_list))
+	{
+		printf("Cache is empty\n");
+	}
+	else
+	{
+		list_for_each(p, &lru_page_list)
+		{
+			counter++;
+			tmp = list_entry(p, struct page_node, lru_list);
+			printf("%*s%ld\n", counter, " ", tmp->pos);	
+		}
+	}
+	
+	printf("-----------------------------------\n");
+
+}
+
+void Page_lru_evict(int n)
+{
+	int min = (n <= page_count_in_cache?n:page_count_in_cache);
+	printf("n = %d page_count_in_cache = %ld min = %d\n", n, page_count_in_cache, min);
+
+	for (int i = 0; i < min; ++i)
+	{
+		struct page_node *p = Find_LRUed_page();
+
+		if(p != NULL)
+		{
+			Page_lru_del(p);
+		}
+		
+	}
+	return ;
 }

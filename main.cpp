@@ -74,6 +74,41 @@ unsigned r_case_6 = 0;
 long pblk_used = 0;
 long pblk_in_mem_count = 0;
 
+void test_Find_LRUed_page(int c)
+{
+    cache_size = c;
+    int pblk_nr;
+
+    struct page_node* page_node;
+
+    for (int i = 0; i < 5; ++i)
+    {
+        pblk_nr = Init_pblk_node();
+        page_node = Init_page_node(rand()%(i+1), pblk_nr);
+        
+        /*
+        if(Is_cache_full())
+        {
+            Print_lru_cache();
+            Page_lru_del(Find_LRUed_page());
+            Print_lru_cache();
+
+        }
+        */
+        Page_lru_add(page_node);
+        Print_lru_cache();
+        Find_LRUed_page();
+        //Page_lru_del(Find_LRUed_page());
+        Print_lru_cache();
+
+        Page_lru_accessed_adjust(page_node); 
+
+        //Is_cache_full();
+    }
+
+    Page_lru_del(Find_LRUed_page());
+    Print_lru_cache();
+}
 
 /*
  * 
@@ -90,10 +125,14 @@ int main(int argc, char** argv) {
     //printf("defaul_argv[1]: %s\n", default_argv[1]);
     Argv_Parse(8, default_argv, file_prefix);
 
+
    
     
     Init_storage(MAX_BLK_NUM);
     
+
+    //test_Find_LRUed_page(3);
+
     //process all the files
     Process(files, trace_start, trace_end, &T_line);
 

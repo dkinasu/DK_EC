@@ -116,8 +116,11 @@ void Destroy_page_tree(struct rb_root *root);
 //add the fp into the list head with lru policy
 void Page_lru_add(struct page_node *p);
 void Page_lru_del(struct page_node *p);
+void Print_lru_cache();
 int Is_cache_full();
+void Page_lru_evict(int n);/*evict n lru pages out*/
 
+struct page_node * Find_LRUed_page(); /*this function returns the least used page*/
 struct page_node * Find_page_node_lru(long int pos); /*this function is not working*/
 
 void Page_lru_accessed_adjust(struct page_node *p);
