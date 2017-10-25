@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>lish.h</itemPath>
+      <itemPath>memory.h</itemPath>
+      <itemPath>process.h</itemPath>
+      <itemPath>rbtree.h</itemPath>
+      <itemPath>storage.h</itemPath>
+      <itemPath>trace.h</itemPath>
+      <itemPath>uthash.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>main.cpp</itemPath>
+      <itemPath>memory.cpp</itemPath>
+      <itemPath>process.cpp</itemPath>
+      <itemPath>rbtree.cpp</itemPath>
+      <itemPath>storage.cpp</itemPath>
+      <itemPath>trace.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+      </compileType>
+      <item path="lish.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="memory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="process.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="process.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rbtree.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="rbtree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="storage.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="storage.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="trace.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="trace.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="uthash.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="lish.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="memory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="process.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="process.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rbtree.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="rbtree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="storage.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="storage.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="trace.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="trace.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="uthash.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
