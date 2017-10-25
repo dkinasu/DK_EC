@@ -47,7 +47,6 @@ struct in_mem_pos{
 /* define fp_node struct and all the related operation */
 struct fp_node{	
 	bool identity;
-  	struct rb_node node;
   	int hit;
   	//struct in_mem_pos *pos;
 	char fingerprint[SHA1SIZE]; //make it as the key/
@@ -84,6 +83,7 @@ struct laddr_node *Init_laddr_node(char *file_path);
 struct laddr_node *Find_filepath(struct rb_root *root, char *file_path);
 void Add_laddr_node(struct rb_root *root, struct laddr_node *laddr_node);
 void Del_laddr_node(struct rb_root *root, struct laddr_node *delete_node);
+void Del_file(struct rb_root *root, char *file_path);
 
 
 //laddr_tree is for searching the file

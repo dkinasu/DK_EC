@@ -126,29 +126,32 @@ int Mark_pblk_in_mem(unsigned pblk_nr)
 
 
 /* delete a pblk node by decreasing its ref_count*/
-void Del_pblk_node(unsigned pblk_nr)
+void Decrease_pblk_ref_count(unsigned pblk_nr)
 {
-	storage[pblk_nr]->ref_count--;
-
-	if(storage[pblk_nr]->ref_count == 0)
+	if (storage[pblk_nr]->ref_count == 0)
 	{
-		//if(((struct fp *)storage[pblk_nr]->fp)->identity == true)
-		{
+		printf("Error: This pblk[%d] is not allocated\n", pblk_nr);
+	}
+	else
+	{
+		storage[pblk_nr]->ref_count--;
 
-			//in_mem_delete((struct fp *)storage[pblk_nr]->fp);	
-		}
-		//else
+		if(storage[pblk_nr]->ref_count == 0)
 		{
-			//disk_delete(&rt_root, pblk_nr);
-		}
+			/*1. mark this pblk unused 2. release fp_node */
+			if (Pblk_is_in_mem(pblk_nr))
+			{
+				//Page_lru_del()
+				storage[pblk_nr]->in_mem = 0;
+			}
 		
-		//pblk_mark_free(storage, pblk_nr);
+			Del_fp(storage[pblk_nr]->fp);
+			
+			Mark_pblk_free(pblk_nr);
+		}
 	}
-	else if(storage[pblk_nr]->ref_count < 0)
-	{
-		assert(0);
-	}
-	return;
 	
+
+	return;
 
 }

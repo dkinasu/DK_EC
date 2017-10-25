@@ -47,7 +47,7 @@ int Pblk_is_free(unsigned pblk_nr);
 int Mark_pblk_free(unsigned pblk_nr);
 int Pblk_is_in_mem(unsigned pblk_nr);
 int Mark_pblk_in_mem(unsigned pblk_nr);
-void Del_pblk_node(unsigned pblk_nr);
+void Decrease_pblk_ref_count(unsigned pblk_nr);
 
 
 

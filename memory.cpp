@@ -21,12 +21,10 @@ struct fp_node *Init_fp_node(char *fingerprint, unsigned pblk_nr)
 	{
 		memcpy(new_node->fingerprint, fingerprint, SHA1SIZE);
 		new_node->fingerprint[SHA1SIZE] = '\0';
-		rb_init_node(&new_node->node);
+		//rb_init_node(&new_node->node);
 		new_node->identity = true;
 		new_node->hit = 0;
-		//new_node->pos = NULL;
 		new_node->pblk_nr = pblk_nr;
-		//new_node->status = FP_IS_NORM;
 		return new_node;
 	} else 
 	{
@@ -49,14 +47,20 @@ struct fp_node * Find_fp(char * fp)
 {
 	struct fp_node *s;
 
-    HASH_FIND_STR( fp_store, fp, s);  
+    HASH_FIND_STR(fp_store, fp, s);  
     return s;
 }
 
 
 void Del_fp(struct fp_node* s)
 {
-	 HASH_DEL(fp_store, s);
+	if(Find_fp(s->fingerprint) != NULL)
+	{
+		HASH_DEL(fp_store, s);
+	}
+	
+	if(s != NULL)
+		free(s);
 }
 
 void Print_fps()
@@ -183,18 +187,33 @@ void Del_laddr_node(struct rb_root *root, struct laddr_node *delete_node)
 {
 	int x = 1;
 	
-	if(delete_node)
+	if(delete_node != NULL)
 	{
+		printf("Found the file to be deleted\n");
+		
 		free(delete_node->file_path);
 		delete_node->file_path = NULL;
+		
 		rb_erase(&delete_node->node, root);
+		Destroy_page_tree(delete_node->page_tree);
+		
 		free(delete_node);
 		delete_node = NULL;
 	}
 	else
 	{
-		assert(x == 0);
+		printf("Node to be deleted is NULL\n");
+		//assert(x == 0);
 	}
+
+}
+
+void Del_file(struct rb_root *root, char *file_path)
+{
+	printf("Start deleting a file\n");
+	struct laddr_node *delete_node = Find_filepath(root, file_path);
+	Del_laddr_node(root, delete_node);
+	printf("Finish deleting a file\n");
 
 }
 
@@ -288,9 +307,17 @@ void Destroy_page_tree(struct rb_root *root)
 	while (page_node) 
 	{
 		node = rb_next(&page_node->node);
-		rb_erase(&page_node->node, root);
-		free(page_node);
 		
+		rb_erase(&page_node->node, root);
+		if(Pblk_is_in_mem(page_node->pblk_nr))
+		{
+				Page_lru_del(page_node);
+				storage[page_node->pblk_nr]->in_mem = 0;
+		}
+		Decrease_pblk_ref_count(page_node->pblk_nr);
+		/*Decrease the ref_count*/
+		free(page_node);
+	
 		if (!node) 
 		{
 			page_node = NULL;
@@ -341,6 +368,7 @@ int Is_cache_full()
 /*this function has a infinite loop, need debugging*/
 struct page_node * Find_page_node_lru(long int pos)
 {
+	/*
 	int counter = 0;
 	
 	struct page_node *tmp;
@@ -369,7 +397,7 @@ struct page_node * Find_page_node_lru(long int pos)
 		
 	}
 
-	printf("[%d] End searching LRU\n", counter);
+	printf("[%d] End searching LRU\n", counter);*/
 
 	return NULL;
 }

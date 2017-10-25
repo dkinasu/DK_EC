@@ -332,7 +332,7 @@ void Read_Process(struct traceline *T_line)
 void Delete_Process(struct traceline *T_line)
 {
 	metrics[DELETE_NUM].total++;
-	//delete_file(&laddr_tree, T_line->file_path);
+	Del_file(&laddr_tree, T_line->file_path);
 }
 
 
@@ -401,7 +401,7 @@ void Process(char **files, int trace_start, int trace_end, struct traceline *T_l
 				{
 					delete_count++;
 					//printf("Delete_count is:%d\n", delete_count);
-					//Delete_Process(T_line);
+					Delete_Process(T_line);
 					//printf("Delete Process Done!\n");
 				}
 
