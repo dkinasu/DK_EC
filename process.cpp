@@ -101,17 +101,21 @@ void Write_Process(struct traceline *T_line)
 
 				if(!Pblk_is_in_mem(page_node->pblk_nr))
 				{
+					cache_miss++;
 					if(Is_cache_full())
 					{
-						printf("Cache is full! Need evict\n");
+						//printf("Cache is full! Need evict\n");
 						Page_lru_evict(1);
 						/*need evict a page*/
 					}
+
 					Page_lru_add(page_node);
 				}
+				else
+					Page_lru_accessed_adjust(page_node->pblk_nr);
 
-				Page_lru_accessed_adjust(page_node);
-
+				//Print_lru_cache();
+				total_hit++;
 				fp->hit++;
 			}
 			else
@@ -126,19 +130,24 @@ void Write_Process(struct traceline *T_line)
 
 				Del_page_node(laddr_node->page_tree, page_node);
 
+				//printf("Tline->pos: %ld\n", T_line->pos);
+
 				page_node = Init_page_node(T_line->pos, pblk_nr);
 				//page_node->fp_node = fp;
 				Add_page_node(laddr_node->page_tree, page_node);
 				
+				cache_miss++;
 				if(Is_cache_full())
 				{
-					printf("Cache is full! Need evict\n");
+					//printf("Cache is full! Need evict\n");
 					Page_lru_evict(1);
 					/*need evict a page*/
 				}
 
 				Page_lru_add(page_node);
-				Page_lru_accessed_adjust(page_node);
+				//Print_lru_cache();
+				
+				//Page_lru_accessed_adjust(page_node->pblk_nr);
 			}
 				
 		}
@@ -156,24 +165,27 @@ void Write_Process(struct traceline *T_line)
 
 				/*1. add new page but no new pblk 2. increase ref_count 3. data_LRU_adjust*/
 				fp->hit++;
+				total_hit++;
 				page_node = Init_page_node(T_line->pos, fp->pblk_nr);
 				storage[page_node->pblk_nr]->ref_count++;
 				Add_page_node(laddr_node->page_tree, page_node);
 
 				if(!Pblk_is_in_mem(page_node->pblk_nr))
 				{
+					cache_miss++;
 					if(Is_cache_full())
 					{
-						printf("Cache is full! Need evict\n");
+						//printf("Cache is full! Need evict\n");
 						Page_lru_evict(1);
 						/*need evict a page*/
 					}
 
 					Page_lru_add(page_node);
 				}
+				else
+					Page_lru_accessed_adjust(page_node->pblk_nr);
 
-				Page_lru_accessed_adjust(page_node);
-							
+				//Print_lru_cache();					
 			}
 			else
 			{
@@ -189,15 +201,17 @@ void Write_Process(struct traceline *T_line)
 				page_node = Init_page_node(T_line->pos, fp->pblk_nr);
 				Add_page_node(laddr_node->page_tree, page_node);
 
+				cache_miss++;
 				if(Is_cache_full())
 				{
-					printf("Cache is full! Need evict\n");
+					//printf("Cache is full! Need evict\n");
 					Page_lru_evict(1);
 					/*need evict a page*/
 				}
 
 				Page_lru_add(page_node);
-				Page_lru_accessed_adjust(page_node);
+				//Print_lru_cache();
+				//Page_lru_accessed_adjust(page_node->pblk_nr);
 
 
 			}
@@ -223,16 +237,21 @@ void Write_Process(struct traceline *T_line)
 				
 			if(!Pblk_is_in_mem(page_node->pblk_nr))
 			{
+				cache_miss++;
 				if(Is_cache_full())
 				{
-					printf("Cache is full! Need evict\n");
+					//printf("Cache is full! Need evict\n");
 					/*need evict a page*/
 					Page_lru_evict(1);
 				}
+				
+
 				Page_lru_add(page_node);
+				//Print_lru_cache();
 			}
 
-			Page_lru_accessed_adjust(page_node);							
+			Page_lru_accessed_adjust(page_node->pblk_nr);
+			//Print_lru_cache();							
 		}
 		else
 		{
@@ -248,15 +267,17 @@ void Write_Process(struct traceline *T_line)
 			page_node = Init_page_node(T_line->pos, fp->pblk_nr);
 			Add_page_node(laddr_node->page_tree, page_node);
 
+			cache_miss++;
 			if(Is_cache_full())
 			{
-					printf("Cache is full! Need evict\n");
+					//printf("Cache is full! Need evict\n");
 					/*need evict a page*/
 					Page_lru_evict(1);
 			}
 			//printf("Finishing adding page!\n");
 			Page_lru_add(page_node);
-			Page_lru_accessed_adjust(page_node);
+			//Print_lru_cache();
+			//Page_lru_accessed_adjust(page_node->pblk_nr);
 
 		}		
 	}
@@ -302,23 +323,24 @@ void Read_Process(struct traceline *T_line)
 				cache_hit++;
 				//printf("READ case 2: cache hit\n");
 				// adjust the lru list 
-				Page_lru_accessed_adjust(res);
+				Page_lru_accessed_adjust(res->pblk_nr);
+				//Print_lru_cache();
 			}
 			else
 			{
 				r_case_4++;
 				//printf("READ case 4: cache miss\n");
-				
+				cache_miss++;
 				//*1. bring the pblk into memory 2. Mark it 3. Ajust LRU
 				if(Is_cache_full())
 				{
-					printf("Cache is full! Need evict\n");
+					//printf("Cache is full! Need evict\n");
 					Page_lru_evict(1);
 					/*need evict a page*/
 				}
-
 				Page_lru_add(res);
-				Page_lru_accessed_adjust(res);	
+				//Print_lru_cache();
+				//Page_lru_accessed_adjust(res->pblk_nr);	
 			}
 				
 		}		
@@ -341,7 +363,7 @@ void Delete_Process(struct traceline *T_line)
 void Process(char **files, int trace_start, int trace_end, struct traceline *T_line)
 {
 	FILE *file;
-	int line_count, write_count, read_count, delete_count;
+	
 	char buffer[MAX_PATH_SIZE + MAX_META_SIZE];
 
 	printf("\n------------------------Start Processing------------------------------\n");
@@ -351,6 +373,17 @@ void Process(char **files, int trace_start, int trace_end, struct traceline *T_l
 	for (int i = trace_start; i < trace_end; ++i)
 	{
 		
+		r_case_2 = 0;
+		r_case_4 = 0;
+		r_case_1 = 0;
+		r_case_3 = 0;
+
+		w_case_1 = 0;
+		w_case_2 = 0;
+		w_case_3 = 0;
+		w_case_4 = 0;
+		w_case_5 = 0;
+		w_case_6 = 0;
 
 		file = fopen(files[i], "r");
 
@@ -367,6 +400,7 @@ void Process(char **files, int trace_start, int trace_end, struct traceline *T_l
 		write_count = 0;
 		read_count = 0;
 		delete_count = 0;
+		other_count = 0;
 
 		Is_cache_full();
 
@@ -374,7 +408,11 @@ void Process(char **files, int trace_start, int trace_end, struct traceline *T_l
 
 	    while(fgets(buffer, MAX_PATH_SIZE + MAX_META_SIZE, file)) 
 	    {
+	    	total_line++;
 	    	line_count++;
+
+	    	//if(line_count > 3050)
+	    		//break;
 
 		    if(TraceLine_Parse(buffer, T_line)==1)
 		    {
@@ -401,8 +439,13 @@ void Process(char **files, int trace_start, int trace_end, struct traceline *T_l
 				{
 					delete_count++;
 					//printf("Delete_count is:%d\n", delete_count);
+					//printf("line_num[%d] Delete\n", line_count);
 					Delete_Process(T_line);
 					//printf("Delete Process Done!\n");
+				}
+				else
+				{
+					other_count++;
 				}
 
 				Clear_Traceline(T_line);
@@ -412,12 +455,18 @@ void Process(char **files, int trace_start, int trace_end, struct traceline *T_l
 
 		}
 
-		printf("file[%d] || linecount: %d || writecount: %d || readcount: %d || deletecount: %d\n", i, line_count, write_count, read_count, delete_count);
+		printf("\nfile[%d] || linecount: %d || writecount: %d || readcount: %d || deletecount: %d || othercount: %d\n", i, line_count, write_count, read_count, delete_count, other_count);
 		printf("Read:  case 1: %d || case 2: %d || case 3: %d || case 4: %d\n", r_case_1, r_case_2, r_case_3, r_case_4);
 		printf("Write: case 1: %d || case 2: %d || case 3: %d || case 4: %d || case 5: %d|| case 6: %d\n", w_case_1, w_case_2, w_case_3, w_case_4, w_case_5, w_case_6);
 
 	}
 	
+	printf("------------------------Cache Situation----------------------------------\n");
+	printf("Cache size =  %ld, hit = %d, miss = %d, evict = %ld\n", cache_size, cache_hit, cache_miss, cache_evict);
+
+	printf("------------------------Dedup Situation----------------------------------\n");
+	printf("Total hit =  %ld, total_line = %d, Dedup ratio = %f%\n", total_hit, total_line, (float)total_hit / total_line * 100);
+
 	printf("------------------------Finish Processing------------------------------\n");
 
 }

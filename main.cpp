@@ -17,6 +17,7 @@
 #include "memory.h"
 #include "storage.h"
 #include "process.h"
+#include <ctime>
 
 
 
@@ -46,6 +47,7 @@ char *file_prefix = (char *)"mobi.trace.";
 struct rb_root laddr_tree;
 
 struct fp_node * fp_store = NULL;
+long int total_hit = 0;
 
 struct pblk_node **storage = NULL;
 LIST_HEAD(lru_page_list);
@@ -54,6 +56,7 @@ long page_count_in_cache = 0;
 unsigned cache_hit = 0;
 unsigned cache_miss = 0;
 long cache_size = 0;
+long cache_evict = 0;
 
 /*define 6 situations of write*/
 unsigned w_case_1 = 0;
@@ -74,17 +77,26 @@ unsigned r_case_6 = 0;
 long pblk_used = 0;
 long pblk_in_mem_count = 0;
 
+int total_line, line_count, write_count, read_count, delete_count, other_count;
+
 void test_Find_LRUed_page(int c)
 {
     cache_size = c;
     int pblk_nr;
+    unsigned tmp;
 
     struct page_node* page_node;
+    
 
     for (int i = 0; i < 5; ++i)
     {
         pblk_nr = Init_pblk_node();
-        page_node = Init_page_node(rand()%(i+1), pblk_nr);
+        
+        srand(time(NULL));
+        tmp = rand()%(i+1);
+        printf("%u\n", tmp);
+        
+        page_node = Init_page_node(tmp, pblk_nr);
         
         /*
         if(Is_cache_full())
@@ -96,18 +108,18 @@ void test_Find_LRUed_page(int c)
         }
         */
         Page_lru_add(page_node);
-        Print_lru_cache();
+        //Print_lru_cache();
         Find_LRUed_page();
         //Page_lru_del(Find_LRUed_page());
-        Print_lru_cache();
+        //Print_lru_cache();
 
-        Page_lru_accessed_adjust(page_node); 
+        //Page_lru_accessed_adjust(page_node); 
 
         //Is_cache_full();
     }
 
     Page_lru_del(Find_LRUed_page());
-    Print_lru_cache();
+    //Print_lru_cache();
 }
 
 /*
@@ -124,9 +136,6 @@ int main(int argc, char** argv) {
     Create_Default_Setting(&default_argv);
     //printf("defaul_argv[1]: %s\n", default_argv[1]);
     Argv_Parse(8, default_argv, file_prefix);
-
-
-   
     
     Init_storage(MAX_BLK_NUM);
     

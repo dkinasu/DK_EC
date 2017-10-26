@@ -58,6 +58,7 @@ struct fp_node{
 extern struct fp_node * fp_store; /* hashtable for fp_store */
 extern unsigned fp_count;
 extern struct list_head lru_fp_list;
+extern long int total_hit;
 
 struct fp_node *Init_fp_node(char *fingerprint, unsigned pblk_nr);
 void Add_fp(struct fp_node *s);
@@ -121,9 +122,10 @@ int Is_cache_full();
 void Page_lru_evict(int n);/*evict n lru pages out*/
 
 struct page_node * Find_LRUed_page(); /*this function returns the least used page*/
-struct page_node * Find_page_node_lru(long int pos); /*this function is not working*/
+struct page_node * Find_page_node_lru(long unsigned pblk_nr); /*this function is not working*/
+int Check_page_node_lru(struct page_node *p);
 
-void Page_lru_accessed_adjust(struct page_node *p);
+void Page_lru_accessed_adjust(long unsigned pblk_nr);
 
 
 extern struct list_head lru_page_list;
@@ -131,6 +133,7 @@ extern unsigned cache_hit;
 extern unsigned cache_miss;
 extern long page_count_in_cache;
 extern long cache_size;
+extern long cache_evict;
 
 
 

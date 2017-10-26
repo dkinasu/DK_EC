@@ -48,6 +48,8 @@ extern int max_fp_num;
 extern int max_blk_num;
 extern struct node* cluster;
 extern struct metric metrics[METRICS_NUM];
+extern int total_line, line_count, write_count, read_count, delete_count, other_count;
+
 
 //a struct for each line of trace
 struct traceline {

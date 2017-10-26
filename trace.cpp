@@ -214,7 +214,7 @@ void Create_Default_Setting(char *** p)
     (*p)[5] = (char *)"1";
     (*p)[6] = (char *)"5000";
     (*p)[7] = (char *)"200000";
-    (*p)[8] = (char *)"5";
+    (*p)[8] = (char *)"500000"; /*500000 * 4KB = 2GB*/
 
 
     /*

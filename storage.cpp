@@ -42,7 +42,7 @@ long Init_pblk_node()
 		{
 			if(Pblk_is_free(i))
 			{
-				storage[pblk_used]->ref_count = 1;
+				storage[i]->ref_count = 1;
 				//storage[pblk_used]->fp = NULL;
 				//storage[pblk_used]->in_mem = 0;/*Not in the memory*/
 

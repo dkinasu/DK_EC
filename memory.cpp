@@ -185,34 +185,40 @@ void Add_laddr_node(struct rb_root *root, struct laddr_node *laddr_node)
 
 void Del_laddr_node(struct rb_root *root, struct laddr_node *delete_node)
 {
-	int x = 1;
+
+	unsigned pblk_nr;
+
 	
-	if(delete_node != NULL)
-	{
-		printf("Found the file to be deleted\n");
+	free(delete_node->file_path);
+	delete_node->file_path = NULL;
+
+	Destroy_page_tree(delete_node->page_tree);
+	
+	rb_erase(&delete_node->node, root);
+
 		
-		free(delete_node->file_path);
-		delete_node->file_path = NULL;
-		
-		rb_erase(&delete_node->node, root);
-		Destroy_page_tree(delete_node->page_tree);
-		
-		free(delete_node);
-		delete_node = NULL;
-	}
-	else
-	{
-		printf("Node to be deleted is NULL\n");
-		//assert(x == 0);
-	}
+	free(delete_node);
+	delete_node = NULL;
 
 }
 
 void Del_file(struct rb_root *root, char *file_path)
 {
-	printf("Start deleting a file\n");
-	struct laddr_node *delete_node = Find_filepath(root, file_path);
-	Del_laddr_node(root, delete_node);
+	//printf("Start deleting a file\n");
+	//Del_laddr_node(root, delete_node);
+	//printf("Finish deleting a file\n");
+
+
+	struct laddr_node *delete_node;
+	
+	delete_node = Find_filepath(root, file_path);
+	
+	if(delete_node != NULL)
+	{
+		Del_laddr_node(root, delete_node);
+	}
+	return;
+
 	printf("Finish deleting a file\n");
 
 }
@@ -235,6 +241,7 @@ struct page_node *Init_page_node(long int pos, unsigned pblk_nr)
 	new_node->pblk_nr = pblk_nr;
 
 	rb_init_node(&new_node->node);
+	//printf("line[%d] New page_node->pblk_nr = %u, pos = %ld\n", line_count, new_node->pblk_nr, new_node->pos);
 	return new_node;
 }
 
@@ -289,13 +296,21 @@ void Del_page_node(struct rb_root *root, struct page_node *delete_node)
 
 
 	rb_erase(&delete_node->node, root);
-	free(delete_node);
+	/*destruct the page_node from the list*/
+	if (Check_page_node_lru(delete_node))
+	{
+		Page_lru_del(delete_node);
+		/* code */
+	}
+	
+	Decrease_pblk_ref_count(delete_node->pblk_nr);
+	free(delete_node);	
 	delete_node = NULL;
 
 }
 
 
-//Destroying the rb_page tree
+//Destroying the rb_page tree and its pblk.
 void Destroy_page_tree(struct rb_root *root)
 {
 	struct page_node *page_node;
@@ -308,6 +323,8 @@ void Destroy_page_tree(struct rb_root *root)
 	{
 		node = rb_next(&page_node->node);
 		
+		Del_page_node(root, page_node);
+		/*
 		rb_erase(&page_node->node, root);
 		if(Pblk_is_in_mem(page_node->pblk_nr))
 		{
@@ -315,7 +332,7 @@ void Destroy_page_tree(struct rb_root *root)
 				storage[page_node->pblk_nr]->in_mem = 0;
 		}
 		Decrease_pblk_ref_count(page_node->pblk_nr);
-		/*Decrease the ref_count*/
+
 		free(page_node);
 	
 		if (!node) 
@@ -323,6 +340,7 @@ void Destroy_page_tree(struct rb_root *root)
 			page_node = NULL;
 			break;
 		}
+		*/
 		
 		page_node = rb_entry(node, struct page_node, node);
 	}
@@ -335,7 +353,7 @@ void Page_lru_add(struct page_node *p)
 	list_add(&p->lru_list, &lru_page_list);
 	Mark_pblk_in_mem(p->pblk_nr);
 	page_count_in_cache++;
-	//printf("Adding page_node: pos = %ld\n", p->pos);
+	//printf("line[%d] Adding page_node to LRU: pblk_nr = %u pos = %ld\n", line_count, p->pblk_nr, p->pos);
 	//printf("Finish Adding new page into LRU\n");
 }
 
@@ -344,19 +362,12 @@ void Page_lru_del(struct page_node *p)
 	list_del(&p->lru_list);
 	storage[p->pblk_nr]->in_mem = 0;
 	page_count_in_cache--;
+	//printf("Deleting page_node from LRU: pblk_nr = %u pos = %ld\n", p->pblk_nr, p->pos);
 	//printf("Finish Deleting page from LRU\n");
 }
 
-void Page_lru_accessed_adjust(struct page_node *p)
-{
-	if (Pblk_is_in_mem(p->pblk_nr))
-	{
-		Page_lru_del(p);
-		Page_lru_add(p);
-	}
-	
-	//printf("Finishing Adjusting LRU\n");
-}
+
+
 
 int Is_cache_full()
 {
@@ -365,10 +376,10 @@ int Is_cache_full()
 }
 
 
-/*this function has a infinite loop, need debugging*/
-struct page_node * Find_page_node_lru(long int pos)
+/*trying to find a page with given pblk_nr in the LRU*/
+struct page_node * Find_page_node_lru(long unsigned pblk_nr)
 {
-	/*
+	
 	int counter = 0;
 	
 	struct page_node *tmp;
@@ -377,29 +388,81 @@ struct page_node * Find_page_node_lru(long int pos)
 
 	assert(!list_empty(&lru_page_list));
 
-	printf("iterating LRU lists\n");
+	//printf("Iterating LRU lists\n");
 	
 	list_for_each_safe(p, q, &lru_page_list) 
 	{
 		
 		counter++;
-		printf("Counter = %d\n", counter);
+		//printf("Counter = %d\n", counter);
 
 		tmp = list_entry(p, struct page_node, lru_list);
 		
 		//printf("tmp->pos: %ld\n", tmp->pos);
 		
-		if (tmp->pos == pos)
+		if (tmp->pblk_nr == pblk_nr)
 		{
-			//printf("cache hit!\n");
+			//printf("Cache hit! tmp->pblk_nr: %u pblk_nr: %lu\n", tmp->pblk_nr, pblk_nr);
 			return tmp;
 		}
 		
 	}
 
-	printf("[%d] End searching LRU\n", counter);*/
+	//printf("[%d] [Not Found!] End searching LRU\n", counter);
 
 	return NULL;
+}
+
+/*check if a page is inside or not*/
+int Check_page_node_lru(struct page_node *pn)
+{
+	
+	int counter = 0;
+	
+	struct page_node *tmp;
+	
+	struct list_head *p, *q;
+
+	assert(!list_empty(&lru_page_list));
+
+	//printf("iterating LRU lists\n");
+	
+	list_for_each_safe(p, q, &lru_page_list) 
+	{
+		
+		counter++;
+		//printf("Counter = %d\n", counter);
+
+		tmp = list_entry(p, struct page_node, lru_list);
+		
+		//printf("tmp->pos: %ld\n", tmp->pos);
+		
+		if (tmp == pn)
+		{
+			//printf("Check Page in LRU: YES!\n");
+			return 1;
+		}
+		
+	}
+
+	//printf("[%d] Check page in LRU: NO\n", counter);
+
+	return 0;
+}
+
+
+
+void Page_lru_accessed_adjust(long unsigned pblk_nr)
+{
+
+	if (Pblk_is_in_mem(pblk_nr))
+	{
+		struct page_node *p = Find_page_node_lru(pblk_nr);
+		Page_lru_del(p);
+		Page_lru_add(p);
+	}
+	
+	//printf("Finishing Adjusting LRU\n");
 }
 
 struct page_node * Find_LRUed_page()
@@ -416,15 +479,27 @@ struct page_node * Find_LRUed_page()
 	}
 	else
 	{
+		//printf("Head->next: %p head->prev: %p\n", (&lru_page_list)->next, (&lru_page_list)->prev);
+		//tmp = list_entry(&lru_page_list, struct page_node, lru_list);
+		//printf("[%d]tmp->pos: %ld\n",counter, tmp->pos);
+
 		list_for_each(p, &lru_page_list)
 		{
-			printf("Infinite loop\n");
+			
 			counter++;
 			tmp = list_entry(p, struct page_node, lru_list);
+
+			//printf("[%d]tmp->pblk_nr: %u pos: %ld\n",counter, tmp->pblk_nr, tmp->pos);
+			
+			if (counter >= 15)
+			{
+				break;
+				/* code */
+			}
 		}
 	}
 
-	printf("The LRUed page_node->pos: %ld\n", tmp->pos);
+	//printf("The LRUed page->pblk_nr:%u pos: %ld\n", tmp->pblk_nr, tmp->pos);
 	return tmp;
 }
 
@@ -447,7 +522,7 @@ void Print_lru_cache()
 		{
 			counter++;
 			tmp = list_entry(p, struct page_node, lru_list);
-			printf("%*s%ld\n", counter, " ", tmp->pos);	
+			printf("%*s pblk_nr: %u  pos:%ld\n", counter, " ", tmp->pblk_nr, tmp->pos);	
 		}
 	}
 	
@@ -458,7 +533,7 @@ void Print_lru_cache()
 void Page_lru_evict(int n)
 {
 	int min = (n <= page_count_in_cache?n:page_count_in_cache);
-	printf("n = %d page_count_in_cache = %ld min = %d\n", n, page_count_in_cache, min);
+	//printf("n = %d page_count_in_cache = %ld min = %d\n", n, page_count_in_cache, min);
 
 	for (int i = 0; i < min; ++i)
 	{
@@ -466,6 +541,8 @@ void Page_lru_evict(int n)
 
 		if(p != NULL)
 		{
+			//cache_miss++;
+			cache_evict++;
 			Page_lru_del(p);
 		}
 		
